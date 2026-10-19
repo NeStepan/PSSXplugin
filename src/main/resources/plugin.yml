@@ -1,0 +1,4 @@
+name: PSSXplugin
+version: '1.0'
+main: su.pssx.PPSXplugin.PPSXplugin
+api-version: '1.21'

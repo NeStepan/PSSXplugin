@@ -1,0 +1,4 @@
+name: ClonesVideoPlugin
+version: '1.0'
+main: su.pssx.clonesVideoPlugin.ClonesVideoPlugin
+api-version: '1.21'
