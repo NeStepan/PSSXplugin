@@ -12,33 +12,43 @@ import io.papermc.paper.command.brigadier.argument.resolvers.selector.PlayerSele
 import io.papermc.paper.event.player.AsyncChatEvent;
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents;
 import org.bukkit.Bukkit;
+import org.bukkit.Server;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.plugin.java.JavaPlugin;
+import su.pssx.PSSXplugin.Commands.Hide;
+import su.pssx.PSSXplugin.Commands.Show;
+import su.pssx.PSSXplugin.Libs.hideLib;
 
 import java.util.List;
 import java.util.logging.Level;
 
 public final class PSSXplugin extends JavaPlugin implements Listener {
+    public static PSSXplugin plugin;
 
     public boolean chat = true;
 
+    public static PSSXplugin getPlugin() {
+        return plugin;
+    }
+
     @Override
     public void onEnable() {
+        plugin = this;
         this.saveDefaultConfig();
 
         //commands
         LiteralArgumentBuilder<CommandSourceStack> root = Commands.literal("event").requires(source -> source.getSender().isOp());
         root.then(Commands.literal("hide")
                 .then(Commands.argument("target", ArgumentTypes.players())
-                    .executes(this::hideCommand)));
+                    .executes(Hide::hideCommand)));
 
         root.then(Commands.literal("show")
                 .then(Commands.argument("target", ArgumentTypes.players())
-                    .executes(this::showCommand)));
+                    .executes(Show::showCommand)));
 
         root.then(Commands.literal("chat").executes(ctx -> {chat = !chat; return 0;}));
         LiteralCommandNode<CommandSourceStack> buildCommand = root.build();
@@ -55,34 +65,12 @@ public final class PSSXplugin extends JavaPlugin implements Listener {
         getLogger().log(Level.INFO,"Funny X1miya plugin started!");
     }
 
-    public int hideCommand(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-
-        final PlayerSelectorArgumentResolver resolver = (PlayerSelectorArgumentResolver) ctx.getArgument("target", PlayerSelectorArgumentResolver.class);
-        final List<Player> targets = resolver.resolve(ctx.getSource());
-
-        for (Player target : targets)
-            hideLib.hidePlayer(this,target,this.getConfig().getStringList("hideFrom"));
-
-        return 0;
-    }
-
-    public int showCommand(CommandContext<CommandSourceStack> ctx) throws CommandSyntaxException {
-
-        final PlayerSelectorArgumentResolver resolver = (PlayerSelectorArgumentResolver) ctx.getArgument("target", PlayerSelectorArgumentResolver.class);
-        final List<Player> targets = resolver.resolve(ctx.getSource());
-
-        for (Player target : targets)
-            hideLib.showPlayer(this,target);
-
-        return 0;
-    }
-
     @EventHandler
     public void plrJoin(PlayerJoinEvent ev){
         Player plr = ev.getPlayer();
 
         if(this.getConfig().getBoolean("hideOnJoin") && !this.getConfig().getStringList("showOnJoin").contains(plr.getName())){
-            hideLib.hidePlayer(this,plr,this.getConfig().getStringList("hideFrom"));
+            hideLib.hidePlayer(plr,this.getConfig().getStringList("hideFrom"));
             ev.joinMessage(null);
             for (Player p : Bukkit.getOnlinePlayers()){
                 if(p.isOp()){
@@ -98,7 +86,7 @@ public final class PSSXplugin extends JavaPlugin implements Listener {
         Player plr = ev.getPlayer();
 
         if(this.getConfig().getBoolean("hideOnJoin") && !this.getConfig().getStringList("showOnJoin").contains(plr.getName())){
-            hideLib.hidePlayer(this,plr,this.getConfig().getStringList("hideFrom"));
+            hideLib.hidePlayer(plr,this.getConfig().getStringList("hideFrom"));
             ev.quitMessage(null);
             for (Player p : Bukkit.getOnlinePlayers()){
                 if(p.isOp()){
